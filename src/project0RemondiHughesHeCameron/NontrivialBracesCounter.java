@@ -7,66 +7,54 @@ import java.util.Scanner;
 
 public class NontrivialBracesCounter{
 
-//    private enum characters{
-//        MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR
-//    }
+    private enum TrivialCharacters{
+        MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR, NONE
+    }
 
     private int leftBraceCount = 0;
     private boolean counting = true;
-    private String ignoreTrivialToken = "";
+    private TrivialCharacters ignoreTrivialToken = TrivialCharacters.NONE;
 
-    public NontrivialBracesCounter(){}
-
-    public int getNumNontrivialLeftBraces(String program){
+    private int getNumNontrivialLeftBraces(String program){
         for (int i=1; i<program.length(); i++){
             char currentChar = program.charAt(i);
             char lastChar = program.charAt(i-1);
-
             if(counting) {
                 this.counting = false;
                 // multiline comment
                 if (currentChar == '*' && lastChar == '/') {
-                    // ignore everything until we find * /
-                    this.ignoreTrivialToken = "/*";
+                    this.ignoreTrivialToken = TrivialCharacters.MULTILINECOMMENT;
                 }
                 // single line comment
                 else if (currentChar == '/' && lastChar == '/') {
-                    // ignore everything until we find \n
-                    this.ignoreTrivialToken = "//";
+                    this.ignoreTrivialToken = TrivialCharacters.SINGLELINECOMMENT;
                 }
                 // normal string
                 else if (currentChar == '"') {
-                    // ignore everything until we find another " unless there is breakout character
-                    this.ignoreTrivialToken = "\"";
+                    this.ignoreTrivialToken = TrivialCharacters.STRING;
                 }
                 // string literal
                 else if (currentChar == '\'') {
-                    // ignore everything until we find '
-                    this.ignoreTrivialToken = "\'";
+                    this.ignoreTrivialToken = TrivialCharacters.CHAR;
                 }
                 else{
                     if (currentChar == '{'){
                         leftBraceCount++;
-                        System.out.println(i);
                     }
                     this.counting = true;
                 }
             }
             else{
-                // multiline comment
-                if (currentChar == '/' && lastChar == '*' && ignoreTrivialToken.equals("/*")) {
+                if (currentChar == '/' && lastChar == '*' && ignoreTrivialToken == TrivialCharacters.MULTILINECOMMENT) {
                     resetTrivialTokenAndStartCounting();
                 }
-                // single line comment
-                else if (currentChar == '\n' && ignoreTrivialToken.equals("//")) {
+                else if (currentChar == '\n' && ignoreTrivialToken == TrivialCharacters.SINGLELINECOMMENT) {
                     resetTrivialTokenAndStartCounting();
                 }
-                // normal string
-                else if (currentChar == '"' && ignoreTrivialToken.equals("\"") && lastChar != '\\') {
+                else if (currentChar == '"' && ignoreTrivialToken == TrivialCharacters.STRING && lastChar != '\\') {
                     resetTrivialTokenAndStartCounting();
                 }
-                // string literal
-                else if (currentChar == '\'' && ignoreTrivialToken.equals("\'") && lastChar != '\\') {
+                else if (currentChar == '\'' && ignoreTrivialToken == TrivialCharacters.CHAR && lastChar != '\\') {
                     resetTrivialTokenAndStartCounting();
                 }
             }
@@ -74,8 +62,8 @@ public class NontrivialBracesCounter{
         return leftBraceCount;
     }
 
-    public void resetTrivialTokenAndStartCounting(){
-        this.ignoreTrivialToken = "";
+    private void resetTrivialTokenAndStartCounting(){
+        this.ignoreTrivialToken = TrivialCharacters.NONE;
         this.counting = true;
     }
 
