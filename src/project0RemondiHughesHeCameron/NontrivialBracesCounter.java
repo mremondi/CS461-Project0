@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 
-
 public class NontrivialBracesCounter{
 
 //    private enum characters{
@@ -16,9 +15,7 @@ public class NontrivialBracesCounter{
     private boolean counting = true;
     private String ignoreTrivialToken = "";
 
-    public NontrivialBracesCounter(){
-
-    }
+    public NontrivialBracesCounter(){}
 
     public int getNumNontrivialLeftBraces(String program){
         for (int i=1; i<program.length(); i++){
@@ -26,17 +23,11 @@ public class NontrivialBracesCounter{
             char lastChar = program.charAt(i-1);
 
             if(counting) {
-                // count if this is true and not a new line
-//            if(currentChar == '\\') {
-//
-//            }
-
                 // multiline comment
                 if (currentChar == '*' && lastChar == '/') {
                     // ignore everything until we find * /
                     this.ignoreTrivialToken = "/*";
                     this.counting = false;
-
                 }
                 // single line comment
                 else if (currentChar == '/' && lastChar == '/') {
@@ -49,7 +40,6 @@ public class NontrivialBracesCounter{
                     // ignore everything until we find another " unless there is breakout character
                     this.ignoreTrivialToken = "\"";
                     this.counting = false;
-
                 }
                 // string literal
                 else if (currentChar == '\'') {
@@ -78,13 +68,17 @@ public class NontrivialBracesCounter{
                 }
                 // normal string
                 else if (currentChar == '"' && ignoreTrivialToken.equals("\"")) {
-                    this.ignoreTrivialToken = "";
-                    this.counting = true;
+                    if(lastChar != '\\') {
+                        this.ignoreTrivialToken = "";
+                        this.counting = true;
+                    }
                 }
                 // string literal
                 else if (currentChar == '\'' && ignoreTrivialToken.equals("\'")) {
-                    this.ignoreTrivialToken = "";
-                    this.counting = true;
+                    if(lastChar != '\\') {
+                        this.ignoreTrivialToken = "";
+                        this.counting = true;
+                    }
                 }
             }
         }
@@ -100,6 +94,5 @@ public class NontrivialBracesCounter{
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
     }
 }
