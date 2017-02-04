@@ -23,66 +23,60 @@ public class NontrivialBracesCounter{
             char lastChar = program.charAt(i-1);
 
             if(counting) {
+                this.counting = false;
                 // multiline comment
                 if (currentChar == '*' && lastChar == '/') {
                     // ignore everything until we find * /
                     this.ignoreTrivialToken = "/*";
-                    this.counting = false;
                 }
                 // single line comment
                 else if (currentChar == '/' && lastChar == '/') {
                     // ignore everything until we find \n
                     this.ignoreTrivialToken = "//";
-                    this.counting = false;
                 }
                 // normal string
                 else if (currentChar == '"') {
                     // ignore everything until we find another " unless there is breakout character
                     this.ignoreTrivialToken = "\"";
-                    this.counting = false;
                 }
                 // string literal
                 else if (currentChar == '\'') {
                     // ignore everything until we find '
                     this.ignoreTrivialToken = "\'";
-                    this.counting = false;
                 }
                 else{
                     if (currentChar == '{'){
                         leftBraceCount++;
                         System.out.println(i);
                     }
+                    this.counting = true;
                 }
             }
             else{
                 // multiline comment
                 if (currentChar == '/' && lastChar == '*' && ignoreTrivialToken.equals("/*")) {
-                    this.ignoreTrivialToken = "";
-                    this.counting = true;
-
+                    resetTrivialTokenAndStartCounting();
                 }
                 // single line comment
                 else if (currentChar == '\n' && ignoreTrivialToken.equals("//")) {
-                    this.ignoreTrivialToken = "";
-                    this.counting = true;
+                    resetTrivialTokenAndStartCounting();
                 }
                 // normal string
-                else if (currentChar == '"' && ignoreTrivialToken.equals("\"")) {
-                    if(lastChar != '\\') {
-                        this.ignoreTrivialToken = "";
-                        this.counting = true;
-                    }
+                else if (currentChar == '"' && ignoreTrivialToken.equals("\"") && lastChar != '\\') {
+                    resetTrivialTokenAndStartCounting();
                 }
                 // string literal
-                else if (currentChar == '\'' && ignoreTrivialToken.equals("\'")) {
-                    if(lastChar != '\\') {
-                        this.ignoreTrivialToken = "";
-                        this.counting = true;
-                    }
+                else if (currentChar == '\'' && ignoreTrivialToken.equals("\'") && lastChar != '\\') {
+                    resetTrivialTokenAndStartCounting();
                 }
             }
         }
         return leftBraceCount;
+    }
+
+    public void resetTrivialTokenAndStartCounting(){
+        this.ignoreTrivialToken = "";
+        this.counting = true;
     }
 
     public static void main(String args[]){

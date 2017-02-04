@@ -11,8 +11,20 @@ public class HelloWorld {
 
         String string = "{{{{{"/* { */;
         String string1 = "{{{{/* { */";
+        String string2 = "\\\\\" { ";
 
         char s = '{';
+        // {
+
+        // "abc {"{
+
+        if (true )/* "{" { '{' // */ {
+
+        }
+
+        if("/*{*/{".equals("")){
+
+        }
 
         //////////{//{
 
@@ -20,6 +32,9 @@ public class HelloWorld {
 
     public void helloWorld(){
         System.out.println("hello \"{  world");
+        if ('\u2000' == '\u2001'){
+
+        }
         /** { *
          *
          * {
