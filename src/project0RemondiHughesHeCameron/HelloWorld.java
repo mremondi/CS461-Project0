@@ -1,9 +1,7 @@
 package project0RemondiHughesHeCameron;
 
-/***********
- *
- *
- * Created by mremondi on 2/4/17.
+/**
+ * Sample program containing 6 nontrivial braces.
  */
 public class HelloWorld {
     public HelloWorld(){

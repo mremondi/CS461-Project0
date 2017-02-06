@@ -28,10 +28,7 @@ public class NontrivialBracesCounter{
         MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR, NONE
     }
 
-    /**
-     * Whether read characters are significant.
-     */
-    private boolean counting = true;
+    private boolean counting;
 
     /**
      * Mode for determining how to enter or exit significance mode.
@@ -47,58 +44,66 @@ public class NontrivialBracesCounter{
      */
     private int getNumNontrivialLeftBraces(String program){
         int leftBraceCount = 0;
-        counting = true;
-        for (int i=0; i<program.length(); i++){
+        this.counting = true;
+        for (int i=1; i<program.length(); i++){
             char currentChar = program.charAt(i);
             char lastChar = program.charAt(i-1);
             if(counting) {
-                this.counting = false;
                 // multiline comment
                 if (currentChar == '*' && lastChar == '/') {
-                    this.ignoreTrivialToken = TrivialCharacters.MULTILINECOMMENT;
+                    this.setTrivialToken(TrivialCharacters.MULTILINECOMMENT);
+                    
                 }
                 // single line comment
                 else if (currentChar == '/' && lastChar == '/') {
-                    this.ignoreTrivialToken = TrivialCharacters.SINGLELINECOMMENT;
+                    this.setTrivialToken(TrivialCharacters.SINGLELINECOMMENT);
                 }
                 // normal string
                 else if (currentChar == '"') {
-                    this.ignoreTrivialToken = TrivialCharacters.STRING;
+                    this.setTrivialToken(TrivialCharacters.STRING);
                 }
-                // string literal
+                // char
                 else if (currentChar == '\'') {
-                    this.ignoreTrivialToken = TrivialCharacters.CHAR;
+                    this.setTrivialToken(TrivialCharacters.CHAR);
                 }
-                else{
-                    if (currentChar == '{'){
-                        leftBraceCount++;
-                    }
-                    this.counting = true;
+                else if (currentChar == '{'){
+                    leftBraceCount++;
                 }
             }
             else{
                 if (currentChar == '/' && lastChar == '*' && ignoreTrivialToken == TrivialCharacters.MULTILINECOMMENT) {
-                    resetTrivialTokenAndStartCounting();
+                    setTrivialToken(TrivialCharacters.NONE);
                 }
                 else if (currentChar == '\n' && ignoreTrivialToken == TrivialCharacters.SINGLELINECOMMENT) {
-                    resetTrivialTokenAndStartCounting();
+                    setTrivialToken(TrivialCharacters.NONE);
                 }
                 else if (currentChar == '"' && ignoreTrivialToken == TrivialCharacters.STRING && lastChar != '\\') {
-                    resetTrivialTokenAndStartCounting();
+                    setTrivialToken(TrivialCharacters.NONE);
                 }
                 else if (currentChar == '\'' && ignoreTrivialToken == TrivialCharacters.CHAR && lastChar != '\\') {
-                    resetTrivialTokenAndStartCounting();
+                    setTrivialToken(TrivialCharacters.NONE);
                 }
             }
         }
         return leftBraceCount;
     }
 
-    private void resetTrivialTokenAndStartCounting(){
-        this.ignoreTrivialToken = TrivialCharacters.NONE;
-        this.counting = true;
+    /**
+     * Sets counting appropriately depending on the given TrivialCharacters token.
+     */
+    private void setTrivialToken(TrivialCharacters token){
+        this.ignoreTrivialToken = token;
+        if (token.equals(TrivialCharacters.NONE)) {
+            this.counting = true;
+        } else {
+            this.counting = false;
+        }
     }
 
+    /**
+     * Tests on a sample file.
+     * @param args
+     */
     public static void main(String args[]){
         try {
             String contents = new Scanner(new File("HelloWorld.java") ).useDelimiter("\\Z").next();
