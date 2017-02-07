@@ -33,12 +33,6 @@ public class NontrivialBracesCounter{
         MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR, COUNTING
     }
 
-
-    /**
-     * Mode for determining how to enter or exit significance mode.
-     */
-    private TraversalMode traversalMode = TraversalMode.COUNTING;
-
     /**
      * Counts and returns the number of significant (defined in class JavaDoc) left
      * braces in the given string.
@@ -48,52 +42,52 @@ public class NontrivialBracesCounter{
      */
     public int getNumNontrivialLeftBraces(String program){
         int leftBraceCount = 0;
-        this.traversalMode = TraversalMode.COUNTING;
+        TraversalMode traversalMode = TraversalMode.COUNTING;
         for (int i=1; i<program.length(); i++){
             char currentChar = program.charAt(i);
             char prevChar = program.charAt(i-1);
-            if(this.traversalMode == TraversalMode.COUNTING) {
+            if(traversalMode == TraversalMode.COUNTING) {
                 // multiline comment
                 if (currentChar == '*' && prevChar == '/') {
-                    this.traversalMode = TraversalMode.MULTILINECOMMENT;
-                    
+                    traversalMode = TraversalMode.MULTILINECOMMENT;
                 }
                 // single line comment
                 else if (currentChar == '/' && prevChar == '/') {
-                    this.traversalMode = TraversalMode.SINGLELINECOMMENT;
+                    traversalMode = TraversalMode.SINGLELINECOMMENT;
                 }
                 // normal string
                 else if (currentChar == '"') {
-                    this.traversalMode = TraversalMode.STRING;
+                    traversalMode = TraversalMode.STRING;
                 }
                 // char
                 else if (currentChar == '\'') {
-                    this.traversalMode = TraversalMode.CHAR;
+                    traversalMode = TraversalMode.CHAR;
                 }
                 else if (currentChar == '{'){
                     leftBraceCount++;
                 }
             }
-            else{  //not currently counting
+            //not currently counting
+            else{
                 //end of multiline comment
                 if (currentChar == '/' && prevChar == '*' &&
-                        this.traversalMode == TraversalMode.MULTILINECOMMENT) {
-                    this.traversalMode = TraversalMode.COUNTING;
+                        traversalMode == TraversalMode.MULTILINECOMMENT) {
+                    traversalMode = TraversalMode.COUNTING;
                 }
                 //end of single line comment
                 else if (currentChar == '\n' &&
-                             this.traversalMode == TraversalMode.SINGLELINECOMMENT) {
-                    this.traversalMode = TraversalMode.COUNTING;
+                             traversalMode == TraversalMode.SINGLELINECOMMENT) {
+                    traversalMode = TraversalMode.COUNTING;
                 }
                 //end of string
                 else if (currentChar == '"' && prevChar != '\\'&&
-                            this.traversalMode == TraversalMode.STRING) {
-                    this.traversalMode = TraversalMode.COUNTING;
+                            traversalMode == TraversalMode.STRING) {
+                    traversalMode = TraversalMode.COUNTING;
                 }
                 //end of char
                 else if (currentChar == '\'' && prevChar != '\\' &&
-                            this.traversalMode == TraversalMode.CHAR ) {
-                    this.traversalMode = TraversalMode.COUNTING;
+                            traversalMode == TraversalMode.CHAR ) {
+                    traversalMode = TraversalMode.COUNTING;
                 }
             }
         }
