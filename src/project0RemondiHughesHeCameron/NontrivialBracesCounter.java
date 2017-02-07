@@ -15,6 +15,11 @@ import java.util.Scanner;
  * Provides a mechanism for counting the number of significant left braces: '{'
  * in a valid Java program. 'Significant' here means that if the left brace were
  * replaced with another character, the program would no longer compile.
+ *
+ * @author Nick Cameron
+ * @author He He
+ * @author Phoebe Hughes
+ * @author Mike Remondi
  */
 public class NontrivialBracesCounter{
 
@@ -24,16 +29,15 @@ public class NontrivialBracesCounter{
      * significant, and more importantly what character or ordered collection of
      * characters must be read before future characters regain significance.
      */
-    private enum TrivialCharacters{
-        MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR, NONE
+    private enum TraversalMode {
+        MULTILINECOMMENT, SINGLELINECOMMENT, STRING, CHAR, COUNTING
     }
 
-    private boolean counting;
 
     /**
      * Mode for determining how to enter or exit significance mode.
      */
-    private TrivialCharacters ignoreTrivialToken = TrivialCharacters.NONE;
+    private TraversalMode traversalMode = TraversalMode.COUNTING;
 
     /**
      * Counts and returns the number of significant (defined in class JavaDoc) left
@@ -42,62 +46,58 @@ public class NontrivialBracesCounter{
      * @param program   the string to count significant left braces from
      * @return  the count of significant left braces
      */
-    private int getNumNontrivialLeftBraces(String program){
+    public int getNumNontrivialLeftBraces(String program){
         int leftBraceCount = 0;
-        this.counting = true;
+        this.traversalMode = TraversalMode.COUNTING;
         for (int i=1; i<program.length(); i++){
             char currentChar = program.charAt(i);
-            char lastChar = program.charAt(i-1);
-            if(counting) {
+            char prevChar = program.charAt(i-1);
+            if(this.traversalMode == TraversalMode.COUNTING) {
                 // multiline comment
-                if (currentChar == '*' && lastChar == '/') {
-                    this.setTrivialToken(TrivialCharacters.MULTILINECOMMENT);
+                if (currentChar == '*' && prevChar == '/') {
+                    this.traversalMode = TraversalMode.MULTILINECOMMENT;
                     
                 }
                 // single line comment
-                else if (currentChar == '/' && lastChar == '/') {
-                    this.setTrivialToken(TrivialCharacters.SINGLELINECOMMENT);
+                else if (currentChar == '/' && prevChar == '/') {
+                    this.traversalMode = TraversalMode.SINGLELINECOMMENT;
                 }
                 // normal string
                 else if (currentChar == '"') {
-                    this.setTrivialToken(TrivialCharacters.STRING);
+                    this.traversalMode = TraversalMode.STRING;
                 }
                 // char
                 else if (currentChar == '\'') {
-                    this.setTrivialToken(TrivialCharacters.CHAR);
+                    this.traversalMode = TraversalMode.CHAR;
                 }
                 else if (currentChar == '{'){
                     leftBraceCount++;
                 }
             }
-            else{
-                if (currentChar == '/' && lastChar == '*' && ignoreTrivialToken == TrivialCharacters.MULTILINECOMMENT) {
-                    setTrivialToken(TrivialCharacters.NONE);
+            else{  //not currently counting
+                //end of multiline comment
+                if (currentChar == '/' && prevChar == '*' &&
+                        this.traversalMode == TraversalMode.MULTILINECOMMENT) {
+                    this.traversalMode = TraversalMode.COUNTING;
                 }
-                else if (currentChar == '\n' && ignoreTrivialToken == TrivialCharacters.SINGLELINECOMMENT) {
-                    setTrivialToken(TrivialCharacters.NONE);
+                //end of single line comment
+                else if (currentChar == '\n' &&
+                             this.traversalMode == TraversalMode.SINGLELINECOMMENT) {
+                    this.traversalMode = TraversalMode.COUNTING;
                 }
-                else if (currentChar == '"' && ignoreTrivialToken == TrivialCharacters.STRING && lastChar != '\\') {
-                    setTrivialToken(TrivialCharacters.NONE);
+                //end of string
+                else if (currentChar == '"' && prevChar != '\\'&&
+                            this.traversalMode == TraversalMode.STRING) {
+                    this.traversalMode = TraversalMode.COUNTING;
                 }
-                else if (currentChar == '\'' && ignoreTrivialToken == TrivialCharacters.CHAR && lastChar != '\\') {
-                    setTrivialToken(TrivialCharacters.NONE);
+                //end of char
+                else if (currentChar == '\'' && prevChar != '\\' &&
+                            this.traversalMode == TraversalMode.CHAR ) {
+                    this.traversalMode = TraversalMode.COUNTING;
                 }
             }
         }
         return leftBraceCount;
-    }
-
-    /**
-     * Sets counting appropriately depending on the given TrivialCharacters token.
-     */
-    private void setTrivialToken(TrivialCharacters token){
-        this.ignoreTrivialToken = token;
-        if (token.equals(TrivialCharacters.NONE)) {
-            this.counting = true;
-        } else {
-            this.counting = false;
-        }
     }
 
     /**
@@ -106,10 +106,10 @@ public class NontrivialBracesCounter{
      */
     public static void main(String args[]){
         try {
-            String contents = new Scanner(new File("HelloWorld.java") ).useDelimiter("\\Z").next();
+            String contents = new Scanner(new File("HelloWorld.java")).useDelimiter("\\Z").next();
             NontrivialBracesCounter counter = new NontrivialBracesCounter();
+            System.out.print("\nShould have 6 nontrivial left braces. Has: ");
             System.out.println(counter.getNumNontrivialLeftBraces(contents));
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
